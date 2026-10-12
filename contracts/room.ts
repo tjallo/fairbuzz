@@ -1,5 +1,15 @@
-import type { Envelope } from "./envelope.ts";
+import { z } from "zod";
+import { v1Envelope } from "./envelope.ts";
 
-export type CreateRoom = Envelope<"v1", "room.create", { roomName: string }>;
+export const createRoomSchema = v1Envelope(
+  "room.create",
+  z.object({ roomName: z.string() }).strict(),
+);
 
-export type JoinRoom = Envelope<"v1", "room.join", { roomCode: string }>;
+export const joinRoomSchema = v1Envelope(
+  "room.join",
+  z.object({ roomCode: z.string() }).strict(),
+);
+
+export type CreateRoom = z.infer<typeof createRoomSchema>;
+export type JoinRoom = z.infer<typeof joinRoomSchema>;

@@ -1,11 +1,13 @@
-type AllowedVersions = "v1";
+import { z } from "zod";
 
-export interface Envelope<
-  Version extends AllowedVersions,
-  Type extends string,
-  Data,
-> {
-  version: Version;
-  type: Type;
-  data: Data;
-}
+export const v1Envelope = <Type extends string, Data extends z.ZodType>(
+  type: Type,
+  data: Data,
+) =>
+  z
+    .object({
+      version: z.literal("v1"),
+      type: z.literal(type),
+      data,
+    })
+    .strict();
