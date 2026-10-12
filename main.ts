@@ -1,16 +1,15 @@
 export function handler(req: Request): Response {
-  const url = new URL(req.url);
-
-  if (url.pathname === "/api") {
-    return Response.json({
-      message: "Hello, world!",
-      time: new Date().toISOString(),
-    });
+  if (req.headers.get("upgrade") != "websocket") {
+    return new Response(null, { status: 426 });
   }
 
-  return new Response("<h1>Welcome to Deno!</h1>", {
-    headers: { "content-type": "text/html" },
+  const { socket, response } = Deno.upgradeWebSocket(req);
+
+  socket.addEventListener("open", () => {
+    console.log("a client connected!");
   });
+
+  return response;
 }
 
 if (import.meta.main) {
