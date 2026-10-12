@@ -24,6 +24,7 @@
 
     const message: CreateRoom = {
       version: "v1",
+      requestId: crypto.randomUUID(),
       type: "room.create",
       data: { roomName: name },
     };

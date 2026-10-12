@@ -7,6 +7,7 @@ export const v1Envelope = <Type extends string, Data extends z.ZodType>(
   z
     .object({
       version: z.literal("v1"),
+      requestId: z.uuid(),
       type: z.literal(type),
       data,
     })
