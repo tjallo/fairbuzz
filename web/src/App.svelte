@@ -1,17 +1,50 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { SocketConnection } from "./lib/socket.svelte";
-  import { CreateRoom } from "@contracts/room";
+  import type { CreateRoom } from "@contracts/room";
 
   let roomName = $state("");
+  let feedback = $state("");
 
-  function createRoom() {
-    const message: CreateRoom = {};
+  onMount(() => {
+    const unsubscribe = SocketConnection.onError(() => {
+      feedback = "Connection error. Please check your connection and reload.";
+    });
 
-    SocketConnection.send(message);
+    return unsubscribe;
+  });
+
+  function createRoom(event: SubmitEvent) {
+    event.preventDefault();
+    const name = roomName.trim();
+    if (!name) {
+      feedback = "Please enter a room name.";
+      return;
+    }
+
+    const message: CreateRoom = {
+      version: "v1",
+      type: "room.create",
+      data: { roomName: name },
+    };
+
+    feedback = SocketConnection.send(JSON.stringify(message))
+      ? "Room creation requested."
+      : "Not connected. Please reload to reconnect.";
   }
 </script>
 
 <section>
-  <input type="text" bind:value={roomName} />
-  <button onclick={createRoom}>Create Room</button>
+  <h1>Create a room</h1>
+  <p>{SocketConnection.isOpen ? "Connected" : "Not connected"}</p>
+
+  <form onsubmit={createRoom}>
+    <label for="room-name">Room name</label>
+    <input id="room-name" type="text" bind:value={roomName} required />
+    <button type="submit" disabled={!SocketConnection.isOpen || !roomName.trim()}>
+      Create Room
+    </button>
+  </form>
+
+  <p role="status">{feedback}</p>
 </section>
