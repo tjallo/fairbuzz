@@ -5,7 +5,11 @@
     "target": "es2023",
     "module": "esnext",
     "types": ["svelte", "vite/client"],
+    "paths": {
+      "@contracts/*": ["../contracts/*"]
+    },
     "allowArbitraryExtensions": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     /**
      * Typecheck JS in `.svelte` and `.js` files by default.
