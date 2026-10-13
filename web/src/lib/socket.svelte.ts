@@ -1,9 +1,12 @@
 import {
   type ClientMessage,
+  type RequestMessage,
+  type ResponseMessage,
   type ServerMessage,
   serverMessageSchema,
 } from "@contracts/messages";
 import { createDefaultSocketMessageHandler } from "./defaultSocketMessageHandler";
+import { Requests } from "./request";
 
 export type SocketMessageHandler = (message: ServerMessage) => void;
 type SocketErrorHandler = (event: Event) => void;
@@ -18,6 +21,7 @@ function defaultSocketUrl(): string {
 
 class Socket {
   #socket: WebSocket;
+  #requests = new Requests();
   #messageQueue: Array<ClientMessage> = [];
   #messageHandlers = new Set<SocketMessageHandler>();
   #errorHandlers = new Set<SocketErrorHandler>();
@@ -45,6 +49,7 @@ class Socket {
 
   #onClose = (): void => {
     this.isOpen = false;
+    this.#requests.clear(new Error("Socket disconnected"));
   };
 
   #onMessage = (event: MessageEvent): void => {
@@ -64,10 +69,12 @@ class Socket {
       return;
     }
 
+    this.#requests.handle(result.data);
     for (const handler of this.#messageHandlers) handler(result.data);
   };
 
   #onError = (event: Event): void => {
+    this.#requests.clear(new Error("Socket error"));
     for (const handler of this.#errorHandlers) handler(event);
   };
 
@@ -90,6 +97,21 @@ class Socket {
     }
   }
 
+  request<Request extends RequestMessage>(
+    message: Request,
+    timeoutMs = 5_000,
+  ): Promise<ResponseMessage<Request>> {
+    if (this.#socket.readyState !== WebSocket.OPEN) {
+      return Promise.reject(new Error("Socket is not open"));
+    }
+
+    return this.#requests.request(
+      message,
+      (request) => this.send(request),
+      timeoutMs,
+    );
+  }
+
   onMessage(handler: SocketMessageHandler): () => void {
     this.#messageHandlers.add(handler);
     return () => this.#messageHandlers.delete(handler);
@@ -102,6 +124,7 @@ class Socket {
 
   close(code?: number, reason?: string): void {
     this.#socket.close(code, reason);
+    this.#requests.clear(new Error("Socket closed"));
   }
 }
 

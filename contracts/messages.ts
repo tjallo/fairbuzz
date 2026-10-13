@@ -23,3 +23,18 @@ export const clientMessageSchema = z.discriminatedUnion("type", [
 
 export type ServerMessage = z.infer<typeof serverMessageSchema>;
 export type ClientMessage = z.infer<typeof clientMessageSchema>;
+
+export const requestResponseTypes = {
+  "room.create": "room.created",
+  "room.join": "room.joined",
+} as const;
+
+export type RequestMessage = Extract<
+  ClientMessage,
+  { type: keyof typeof requestResponseTypes }
+>;
+
+export type ResponseMessage<Request extends RequestMessage> = Extract<
+  ServerMessage,
+  { type: (typeof requestResponseTypes)[Request["type"]] }
+>;
