@@ -16,5 +16,7 @@
         roomCode = code;
       }}
     />
+  {:else}
+    <h1>Roomcode: {roomCode}</h1>
   {/if}
 </section>
