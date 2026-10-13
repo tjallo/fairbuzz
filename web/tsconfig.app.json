@@ -6,7 +6,8 @@
     "module": "esnext",
     "types": ["svelte", "vite/client"],
     "paths": {
-      "@contracts/*": ["../contracts/*"]
+      "@contracts/*": ["../contracts/*"],
+      "zod": ["./node_modules/zod"]
     },
     "allowArbitraryExtensions": true,
     "allowImportingTsExtensions": true,

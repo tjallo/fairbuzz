@@ -6,6 +6,7 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [svelte()],
   resolve: {
+    dedupe: ['zod'],
     alias: {
       '@contracts': fileURLToPath(new URL('../contracts', import.meta.url)),
     },

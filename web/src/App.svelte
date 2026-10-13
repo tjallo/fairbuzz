@@ -2,9 +2,15 @@
   import { onMount } from "svelte";
   import { SocketConnection } from "./lib/socket.svelte";
   import type { CreateRoom } from "@contracts/room";
+  import type { Person } from "@contracts/people";
 
   let roomName = $state("");
   let feedback = $state("");
+
+  const host: Person = {
+    name: "henkjan",
+    uuid: crypto.randomUUID(),
+  };
 
   onMount(() => {
     const unsubscribe = SocketConnection.onError(() => {
@@ -26,7 +32,7 @@
       version: "v1",
       requestId: crypto.randomUUID(),
       type: "room.create",
-      data: { roomName: name },
+      data: { name, host },
     };
 
     feedback = SocketConnection.send(JSON.stringify(message))
@@ -42,7 +48,10 @@
   <form onsubmit={createRoom}>
     <label for="room-name">Room name</label>
     <input id="room-name" type="text" bind:value={roomName} required />
-    <button type="submit" disabled={!SocketConnection.isOpen || !roomName.trim()}>
+    <button
+      type="submit"
+      disabled={!SocketConnection.isOpen || !roomName.trim()}
+    >
       Create Room
     </button>
   </form>
