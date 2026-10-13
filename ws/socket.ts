@@ -72,7 +72,7 @@ export function handleSocket(socket: WebSocket): void {
         heartbeat?.handlePong(message);
         break;
       case "room.create":
-        safeSend(handleRoomCreate(message))
+        safeSend(handleRoomCreate(message, socketUuid));
         break;
 
       case "room.join":

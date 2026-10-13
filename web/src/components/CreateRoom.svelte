@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import type { Person } from "@contracts/people";
     import { createMessage } from "@contracts/envelope";
     import { SocketConnection } from "../lib/socket.svelte";
     import type { Room } from "@contracts/room";
@@ -13,11 +12,6 @@
 
     let roomName = $state("");
     let feedback = $state("");
-
-    const host: Person = {
-        name: `Host-${crypto.randomUUID().slice(0, 4).toUpperCase()}`,
-        uuid: crypto.randomUUID(),
-    };
 
     onMount(() => {
         const unsubscribe = SocketConnection.onError(() => {
@@ -38,7 +32,7 @@
 
         try {
             const response = await SocketConnection.request(
-                createMessage("room.create", { name, host }),
+                createMessage("room.create", { roomName: name }),
             );
 
             onCreated(response.data.roomCode);

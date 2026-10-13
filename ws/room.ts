@@ -1,7 +1,7 @@
 import type { CreateRoom, Room, RoomCreated } from "@contracts/room.ts";
 import { createMessage } from "@contracts/envelope.ts";
 
-const rooms: Map<string, Room> = new Map();
+export const rooms: Map<Room["code"], Room> = new Map();
 const CODE_LEN = 8;
 
 function generateRoomCode(): string {
@@ -23,14 +23,15 @@ function generateRoomCode(): string {
   return code;
 }
 
-export function handleRoomCreate(createRoom: CreateRoom): RoomCreated {
+export function handleRoomCreate(
+  createRoom: CreateRoom,
+  socketId: string,
+): RoomCreated {
   const roomCode = generateRoomCode();
 
-  const { name, host } = createRoom.data;
-
   const room: Room = {
-    name,
-    host,
+    name: createRoom.data.roomName,
+    host: socketId,
     code: roomCode,
     players: {},
   };
@@ -38,6 +39,6 @@ export function handleRoomCreate(createRoom: CreateRoom): RoomCreated {
   rooms.set(roomCode, room);
 
   return createMessage("room.created", {
-    roomCode
-  }, createRoom.requestId)
+    roomCode,
+  }, createRoom.requestId);
 }
