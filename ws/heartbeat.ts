@@ -72,10 +72,13 @@ export function startHeartbeat(socket: WebSocket, socketUuid: string) {
   }
 
   function handlePong(pong: Pong): void {
-    if (
-      pong.requestId === pendingPong?.requestId &&
-      pong.data.uuid === socketUuid
-    ) {
+    if (!pendingPong || pong.requestId !== pendingPong.requestId) {
+      stop();
+      socket.close(1008, "Unexpected pong requestId");
+      return;
+    }
+
+    if (pong.data.uuid === socketUuid) {
       pendingPong.resolve(true);
     }
   }
