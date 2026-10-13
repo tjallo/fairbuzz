@@ -3,8 +3,9 @@ import {
   type ServerMessage,
   serverMessageSchema,
 } from "@contracts/messages";
+import { createDefaultSocketMessageHandler } from "./defaultSocketMessageHandler";
 
-type SocketMessageHandler = (message: ServerMessage) => void;
+export type SocketMessageHandler = (message: ServerMessage) => void;
 type SocketErrorHandler = (event: Event) => void;
 
 function defaultSocketUrl(): string {
@@ -105,3 +106,6 @@ class Socket {
 }
 
 export const SocketConnection = new Socket(defaultSocketUrl());
+SocketConnection.onMessage(
+  createDefaultSocketMessageHandler((message) => SocketConnection.send(message)),
+);

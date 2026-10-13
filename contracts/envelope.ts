@@ -16,7 +16,7 @@ export const v1Envelope = <Type extends string, Data extends z.ZodType>(
 export function createMessage<Type extends string, Data>(
   type: Type,
   data: Data,
-  requestId = crypto.randomUUID(),
+  requestId: string = crypto.randomUUID(),
 ) {
   return {
     version: "v1" as const,

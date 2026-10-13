@@ -9,3 +9,12 @@ export const pingSchema = v1Envelope(
 );
 
 export type Ping = z.infer<typeof pingSchema>;
+
+export const pongSchema = v1Envelope(
+  "pong",
+  z.object({
+    uuid: z.uuid(),
+  }),
+);
+
+export type Pong = z.infer<typeof pongSchema>;
