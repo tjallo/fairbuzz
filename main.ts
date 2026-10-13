@@ -1,4 +1,4 @@
-import { Ping } from "@contracts/ping.ts";
+import type { Ping } from "@contracts/ping.ts";
 import { createMessage } from "@contracts/envelope.ts";
 
 const clients = new Map<string, WebSocket>();
@@ -35,7 +35,7 @@ export function handler(req: Request): Response {
   function flushMessageQueue() {
     while (messageQueue.length > 0) {
       const message = messageQueue.shift();
-      if (!message) {
+      if (message === undefined) {
         return;
       }
 
@@ -49,8 +49,9 @@ export function handler(req: Request): Response {
 
   function removeClient() {
     clients.delete(socketUuid);
-    if (pingSender) {
+    if (pingSender !== undefined) {
       clearInterval(pingSender);
+      pingSender = undefined;
     }
 
     socket.close();
@@ -66,12 +67,15 @@ export function handler(req: Request): Response {
     }
   }
 
-  socket.addEventListener("open", (_ev) => {
+  socket.addEventListener("open", () => {
     console.log(`Client ${socketUuid} connected`);
     clients.set(socketUuid, socket);
+
     flushMessageQueue();
+    if (socket.readyState !== WebSocket.OPEN) return;
+
+    pingSender = setInterval(sendPing, 5_000);
     sendPing();
-    pingSender = setInterval(sendPing, 5 * 1_000);
   });
 
   socket.addEventListener("close", () => {
