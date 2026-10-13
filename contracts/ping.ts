@@ -7,3 +7,5 @@ export const ping = v1Envelope(
     uuid: z.uuid(),
   }),
 );
+
+export type Ping = z.infer<typeof ping>;
