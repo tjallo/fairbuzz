@@ -1,4 +1,5 @@
-import type { CreateRoom, Room } from "@contracts/room.ts";
+import type { CreateRoom, Room, RoomCreated } from "@contracts/room.ts";
+import { createMessage } from "@contracts/envelope.ts";
 
 const rooms: Map<string, Room> = new Map();
 const CODE_LEN = 8;
@@ -22,7 +23,7 @@ function generateRoomCode(): string {
   return code;
 }
 
-export function handleRoomCreate(createRoom: CreateRoom): string {
+export function handleRoomCreate(createRoom: CreateRoom): RoomCreated {
   const roomCode = generateRoomCode();
 
   const { name, host } = createRoom.data;
@@ -36,5 +37,7 @@ export function handleRoomCreate(createRoom: CreateRoom): string {
 
   rooms.set(roomCode, room);
 
-  return roomCode;
+  return createMessage("room.created", {
+    roomCode
+  }, createRoom.requestId)
 }

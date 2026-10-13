@@ -10,9 +10,11 @@
 </script>
 
 <section>
-  <CreateRoom
-    onCreated={(code) => {
-      roomCode = code;
-    }}
-  />
+  {#if roomCode === null}
+    <CreateRoom
+      onCreated={(code) => {
+        roomCode = code;
+      }}
+    />
+  {/if}
 </section>

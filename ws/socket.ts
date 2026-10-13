@@ -1,5 +1,9 @@
-import { clientMessageSchema } from "@contracts/messages.ts";
+import {
+  clientMessageSchema,
+  type ServerMessage,
+} from "@contracts/messages.ts";
 import { startHeartbeat } from "./heartbeat.ts";
+import { handleRoomCreate } from "./room.ts";
 
 const clients = new Map<string, WebSocket>();
 
@@ -15,6 +19,18 @@ export function handleSocket(socket: WebSocket): void {
     clients.delete(socketUuid);
     heartbeat?.stop();
     socket.close();
+  }
+
+  function safeSend(message: ServerMessage): boolean {
+    if (socket.readyState !== WebSocket.OPEN) return false;
+
+    try {
+      socket.send(JSON.stringify(message));
+      return true;
+    } catch {
+      removeClient();
+      return false;
+    }
   }
 
   socket.addEventListener("open", () => {
@@ -54,6 +70,13 @@ export function handleSocket(socket: WebSocket): void {
     switch (message.type) {
       case "pong":
         heartbeat?.handlePong(message);
+        break;
+      case "room.create":
+        safeSend(handleRoomCreate(message))
+        break;
+
+      case "room.join":
+        // Join room and send room.joined or error.
         break;
       default:
         console.log("Received message:", message);
