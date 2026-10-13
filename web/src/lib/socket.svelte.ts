@@ -59,7 +59,7 @@ class Socket {
 
     const result = serverMessageSchema.safeParse(raw);
     if (!result.success) {
-      console.warn("Invalid socket message", result.error);
+      console.error("Invalid socket message", result.error);
       return;
     }
 

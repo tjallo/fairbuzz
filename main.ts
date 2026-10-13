@@ -1,5 +1,6 @@
 import type { Ping } from "@contracts/ping.ts";
 import { createMessage } from "@contracts/envelope.ts";
+import type { ServerMessage } from "@contracts/messages.ts";
 
 const clients = new Map<string, WebSocket>();
 
@@ -12,9 +13,9 @@ export function handler(req: Request): Response {
 
   let pingSender: undefined | ReturnType<typeof setInterval> = undefined;
   const socketUuid = crypto.randomUUID();
-  const messageQueue: Array<string> = [];
+  const messageQueue: Array<ServerMessage> = [];
 
-  function safeSend(message: string): boolean {
+  function safeSend(message: ServerMessage): boolean {
     if (socket.readyState === WebSocket.CONNECTING) {
       messageQueue.push(message);
       return true;
@@ -25,7 +26,7 @@ export function handler(req: Request): Response {
     }
 
     try {
-      socket.send(message);
+      socket.send(JSON.stringify(message));
       return true;
     } catch {
       return false;
@@ -59,7 +60,7 @@ export function handler(req: Request): Response {
 
   function sendPing() {
     const ping: Ping = createMessage("ping", { uuid: socketUuid });
-    const res = safeSend(JSON.stringify(ping));
+    const res = safeSend(ping);
 
     if (!res) {
       removeClient();
