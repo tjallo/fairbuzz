@@ -35,7 +35,7 @@
       data: { name, host },
     };
 
-    feedback = SocketConnection.send(JSON.stringify(message))
+    feedback = SocketConnection.send(message)
       ? "Room creation requested."
       : "Not connected. Please reload to reconnect.";
   }

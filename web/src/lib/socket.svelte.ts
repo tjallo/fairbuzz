@@ -1,4 +1,10 @@
-type SocketMessageHandler = (event: MessageEvent) => void;
+import {
+  type ClientMessage,
+  type ServerMessage,
+  serverMessageSchema,
+} from "@contracts/messages";
+
+type SocketMessageHandler = (message: ServerMessage) => void;
 type SocketErrorHandler = (event: Event) => void;
 
 function defaultSocketUrl(): string {
@@ -11,7 +17,7 @@ function defaultSocketUrl(): string {
 
 class Socket {
   #socket: WebSocket;
-  #messageQueue: Array<string> = [];
+  #messageQueue: Array<ClientMessage> = [];
   #messageHandlers = new Set<SocketMessageHandler>();
   #errorHandlers = new Set<SocketErrorHandler>();
 
@@ -41,7 +47,23 @@ class Socket {
   };
 
   #onMessage = (event: MessageEvent): void => {
-    for (const handler of this.#messageHandlers) handler(event);
+    if (typeof event.data !== "string") return;
+
+    let raw: unknown;
+    try {
+      raw = JSON.parse(event.data);
+    } catch {
+      console.warn("Invalid socket JSON");
+      return;
+    }
+
+    const result = serverMessageSchema.safeParse(raw);
+    if (!result.success) {
+      console.warn("Invalid socket message", result.error);
+      return;
+    }
+
+    for (const handler of this.#messageHandlers) handler(result.data);
   };
 
   #onError = (event: Event): void => {
@@ -49,7 +71,7 @@ class Socket {
   };
 
   /** Sends immediately when open, queues while connecting, and returns false if closed. */
-  send(message: string): boolean {
+  send(message: ClientMessage): boolean {
     if (this.#socket.readyState === WebSocket.CONNECTING) {
       this.#messageQueue.push(message);
       return true;
@@ -60,7 +82,7 @@ class Socket {
     }
 
     try {
-      this.#socket.send(message);
+      this.#socket.send(JSON.stringify(message));
       return true;
     } catch {
       return false;
