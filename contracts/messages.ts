@@ -1,11 +1,18 @@
 import { z } from "zod";
 import { pingSchema, pongSchema } from "@contracts/ping.ts";
-import { createRoomSchema, joinRoomSchema } from "@contracts/room.ts";
+import {
+  createRoomSchema,
+  joinRoomSchema,
+  roomCreatedSchema,
+  roomJoinedSchema,
+} from "@contracts/room.ts";
 import { errorSchema } from "@contracts/error.ts";
 
 export const serverMessageSchema = z.discriminatedUnion("type", [
   pingSchema,
   errorSchema,
+  roomCreatedSchema,
+  roomJoinedSchema,
 ]);
 
 export const clientMessageSchema = z.discriminatedUnion("type", [

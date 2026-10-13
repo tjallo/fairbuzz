@@ -24,5 +24,17 @@ export const joinRoomSchema = v1Envelope(
   }).strict(),
 );
 
+export const roomCreatedSchema = v1Envelope(
+  "room.created",
+  z.object({ roomCode: roomSchema.shape.code }).strict(),
+);
+
+export const roomJoinedSchema = v1Envelope(
+  "room.joined",
+  z.object({ roomCode: roomSchema.shape.code }).strict(),
+);
+
 export type CreateRoom = z.infer<typeof createRoomSchema>;
 export type JoinRoom = z.infer<typeof joinRoomSchema>;
+export type RoomCreated = z.infer<typeof roomCreatedSchema>;
+export type RoomJoined = z.infer<typeof roomJoinedSchema>;
